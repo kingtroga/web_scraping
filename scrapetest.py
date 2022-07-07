@@ -1,22 +1,15 @@
-# accounting for bad content that is non existant code pages 12 (30/306)
-from urllib.request  import urlopen
-from urllib.error import HTTPError
+# understanding findAll() and find()
+from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-def getTitle(url):
-    try:
-        html = urlopen(url)
-    except HTTPError as e:
-        return None 
-    try:
-        bs = BeautifulSoup(html.read(), 'html.parser')
-        title = bs.body.h1
-    except AttributeError as e:
-        return None
-    return title
+html = urlopen('https://www.pythonscraping.com/pages/warandpeace.html')
+bs = BeautifulSoup(html.read(), 'html.parser')
 
-title = getTitle('http://www.pythonscraping.com/pages/page1.html')
-if title == None:
-    print('Title could not be found')
-else:
-    print(title)
+
+# find_all(tag, attributes, recursive, text, limit, keywords)
+# find(tag, attributes, recursive, text, keywords)
+
+# Code to find all the number of times "the price" is surrounded by tags
+# on the example page
+nameList = bs.findAll(text='the prince')
+print(len(nameList))
