@@ -14,6 +14,6 @@ def getLinks(articleUrl):
 
 links = getLinks('/wiki/Kevin_Bacon')
 while len(links) > 0:
-    newArticle = links[random.randint(0, len(links)-1)].attr['href']
+    newArticle = links[random.randint(0, len(links)-1)].attrs['href']
     print(newArticle)
     links = getLinks(newArticle)
