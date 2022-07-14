@@ -1,13 +1,11 @@
-# RegularExpressions and BeautifulSoap
-
+# Writing Web Crawlers
+# a Python script that retrieves an arbitrary
+# Wikipedia page and produces a list of links on that page
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-import re
 
-html = urlopen("https://www.pythonscraping.com/pages/page3.html")
+html = urlopen('http://en.wikipedia.org/wiki/Kevin_Bacon')
 bs = BeautifulSoup(html, 'html.parser')
-images = bs.find_all("img", 
-    {'src': re.compile('\.\.\/img\/gifts/img.*\.jpg')}
-)
-for image in images:
-    print(image['src'])
+for link in bs.find_all('a'):
+    if 'href' in link.attrs:
+        print(link.attrs['href']);
