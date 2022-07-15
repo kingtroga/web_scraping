@@ -1,43 +1,73 @@
-# Dealing with Different Website Layouts.
+# Crawling Sites Through Links
 import requests
+import re
 from bs4 import BeautifulSoup
+
+class Website:
+    def __init__(self, name, url, targetPattern, absoluteUrl,
+        titleTag, bodyTag):
+        self.name = name
+        self.url = url
+        self.targetPattern = targetPattern
+        self.absoluteUrl = absoluteUrl
+        self.titleTag = titleTag
+        self.bodyTag = bodyTag
 
 class Content:
     def __init__(self, url, title, body):
         self.url = url
         self.title = title
         self.body = body
-    
-    
-def getPage(url):
-    req = requests.get(url)
-    return BeautifulSoup(req.text, 'html.parser')
 
-def scrapeNYTimes(url):
-    bs = getPage(url)
-    title = bs.find("h1").text
-    lines = bs.select('div.StoryBodyCompanionColumn div p')
-    body = '\n'.join([line.text for line in lines])
-    return Content(url, title, body)
+    def print(self):
+        print("URL: {}".format(self.url))
+        print("TITLE: {}".format(self.title))
+        print("BODY:\n{}".format(self.body))
 
-def scrapeBrookings(url):
-    bs = getPage(url)
-    title = bs.find("h1").text
-    body = bs.find("div", {'class', 'post-body'}).text
-    return Content(url, title, body)
+class Crawler:
+    def __init__(self, site):
+        self.site = site
+        self.visited = []
 
-url= 'https://www.brookings.edu/blog/future-developement/2018/01/26/delivering-inclusive-urban-access-3-uncomfortable-truths/'
+    def getPage(self, url):
+        try:
+            req = requests.get(url)
+        except requests.exceptions.RequestException:
+            return None
+        return BeautifulSoup(req.text, 'html.parser')
 
-content = scrapeBrookings(url)
-print('Title: {}'.format(content.title))
-print('URL: {}\n'.format(content.url))
-print(content.body)
+    def safeGet(self, pageObj, selector):
+        selectedElems = pageObj.select(selector)
+        if selectedElems is not None and len(selectedElems) > 0:
+            return '\n'.join([elem.get_text() for elem in selectedElems])
+        return ''
 
-url='https://www.nytimes.com/2018/01/25/opinion/sunday/silicon-valley-immortality.html'
-content = scrapeNYTimes(url)
-print('Title: {}'.format(content.title))
-print('URL: {}\n'.format(content.url))
-print(content.body)
+    def parse(self, url):
+        bs = self.getPage(url)
+        if bs is not None:
+            title = self.safeGet(bs, self.site.titleTag)
+            body = self.safeGet(bs, self.site.bodyTag)
+            if title !='' and body != '':
+                content = Content(url, title, body)
+                content.print()
 
+    def crawl(self):
+        """
+        Get pages from website home page
+        """
+        bs = self.getPage(self.site.url)
+        targetPages = bs.findall('a', 
+            href=re.compile(self.site.targetPattern))
+        for targetPage in targetPages:
+            targetPage = targetPage.attrs['href']
+            if targetPage not in self.visited:
+                self.visited.append(targetPage)
+                if not self.site.absoluteUrl:
+                    targetPage = '{}{}'.format(self.site.url, targetPage)
+                self.parse(targetPage)
 
+reuters = Website('Reuters', 'https://www.reuters.com', '^(/article/)', False,
+'h1', 'div.StandardArticleBody_body_1gnLA')
+crawler = Crawler(reuters)
+crawler.crawl()
 
