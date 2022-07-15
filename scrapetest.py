@@ -4,8 +4,8 @@ import re
 from bs4 import BeautifulSoup
 
 class Website:
-    def __init__(self, name, url, targetPattern, absoluteUrl,
-        titleTag, bodyTag):
+
+    def __init__(self, name, url, targetPattern, absoluteUrl, titleTag, bodyTag):
         self.name = name
         self.url = url
         self.targetPattern = targetPattern
@@ -13,16 +13,18 @@ class Website:
         self.titleTag = titleTag
         self.bodyTag = bodyTag
 
+
 class Content:
+
     def __init__(self, url, title, body):
         self.url = url
         self.title = title
         self.body = body
 
     def print(self):
-        print("URL: {}".format(self.url))
-        print("TITLE: {}".format(self.title))
-        print("BODY:\n{}".format(self.body))
+        print('URL: {}'.format(self.url))
+        print('TITLE: {}'.format(self.title))
+        print('BODY:\n{}'.format(self.body))
 
 class Crawler:
     def __init__(self, site):
@@ -47,7 +49,7 @@ class Crawler:
         if bs is not None:
             title = self.safeGet(bs, self.site.titleTag)
             body = self.safeGet(bs, self.site.bodyTag)
-            if title !='' and body != '':
+            if title != '' and body != '':
                 content = Content(url, title, body)
                 content.print()
 
@@ -56,8 +58,7 @@ class Crawler:
         Get pages from website home page
         """
         bs = self.getPage(self.site.url)
-        targetPages = bs.findall('a', 
-            href=re.compile(self.site.targetPattern))
+        targetPages = bs.findAll('a', href=re.compile(self.site.targetPattern))
         for targetPage in targetPages:
             targetPage = targetPage.attrs['href']
             if targetPage not in self.visited:
@@ -66,8 +67,9 @@ class Crawler:
                     targetPage = '{}{}'.format(self.site.url, targetPage)
                 self.parse(targetPage)
 
-reuters = Website('Reuters', 'https://www.reuters.com', '^(/article/)', False,
-'h1', 'div.StandardArticleBody_body_1gnLA')
+
+reuters = Website('Reuters', 'https://www.reuters.com', '^(/article/)',
+                  False, 'h1', 'div.StandardArticleBody_body_1gnLA')
 crawler = Crawler(reuters)
 crawler.crawl()
 
